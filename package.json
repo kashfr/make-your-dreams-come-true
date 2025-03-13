@@ -1,0 +1,17 @@
+{
+  "name": "make-your-dreams-come-true",
+  "version": "1.0.0",
+  "description": "A responsive one-page website template based on Dimension by HTML5 UP",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["html5", "css3", "responsive", "template"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^6.2.0"
+  }
+}
