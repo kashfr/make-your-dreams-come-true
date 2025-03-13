@@ -1,5 +1,7 @@
 // vite.config.js
-export default {
+import { defineConfig } from "vite";
+
+export default defineConfig({
   // Base public path when served in production
   base: "./",
   // Configure the server
@@ -13,15 +15,7 @@ export default {
     outDir: "dist",
     emptyOutDir: true,
     sourcemap: true,
-    // Optimize chunks
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ["emailjs-com"],
-        },
-      },
-    },
   },
   // Environment variables
   envPrefix: "VITE_",
-};
+});

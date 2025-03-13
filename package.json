@@ -8,10 +8,18 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "keywords": ["html5", "css3", "responsive", "template"],
+  "keywords": [
+    "html5",
+    "css3",
+    "responsive",
+    "template"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "vite": "^6.2.0"
+  },
+  "dependencies": {
+    "@emailjs/browser": "^4.4.1"
   }
 }
