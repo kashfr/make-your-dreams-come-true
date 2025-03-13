@@ -52,6 +52,26 @@ function copyAssets() {
         }
       });
 
+      // Copy webfonts folder
+      const webfontsDir = path.resolve(__dirname, "assets/webfonts");
+      const destWebfontsDir = path.resolve(__dirname, "dist/assets/webfonts");
+
+      if (fs.existsSync(webfontsDir)) {
+        if (!fs.existsSync(destWebfontsDir)) {
+          fs.mkdirSync(destWebfontsDir, { recursive: true });
+        }
+
+        const webfontFiles = fs.readdirSync(webfontsDir);
+        webfontFiles.forEach((file) => {
+          const src = path.resolve(webfontsDir, file);
+          const dest = path.resolve(destWebfontsDir, file);
+          if (fs.statSync(src).isFile()) {
+            fs.copyFileSync(src, dest);
+            console.log(`Copied ${file} to dist/assets/webfonts/`);
+          }
+        });
+      }
+
       // Copy images
       const imgDir = path.resolve(__dirname, "images");
       const destImgDir = path.resolve(__dirname, "dist/images");
@@ -66,6 +86,30 @@ function copyAssets() {
             console.log(`Copied ${file} to dist/images/`);
           }
         });
+      }
+
+      // Manually fix the HTML file with a complete rewrite
+      const htmlPath = path.resolve(__dirname, "dist/index.html");
+      if (fs.existsSync(htmlPath)) {
+        // Get the original unprocessed HTML as a template
+        const originalHtmlPath = path.resolve(__dirname, "index.html");
+        let originalHtml = fs.readFileSync(originalHtmlPath, "utf-8");
+
+        // Update paths to use absolute paths
+        originalHtml = originalHtml
+          .replace(/src="assets\//g, 'src="/assets/')
+          .replace(/href="assets\//g, 'href="/assets/')
+          .replace(/src="images\//g, 'src="/images/')
+          .replace(/href="images\//g, 'href="/images/');
+
+        // Add the compiled script
+        originalHtml = originalHtml.replace(
+          "</head>",
+          '  <script type="module" crossorigin src="/assets/js/main-CZSNINCa.js"></script>\n</head>'
+        );
+
+        fs.writeFileSync(htmlPath, originalHtml);
+        console.log("Completely rewrote HTML file with proper paths");
       }
     },
   };
@@ -101,8 +145,9 @@ export default defineConfig({
       output: {
         // Ensure proper CSS output
         assetFileNames: (assetInfo) => {
+          // Don't hash CSS files
           if (assetInfo.name && assetInfo.name.endsWith(".css")) {
-            return "assets/[name][extname]";
+            return "assets/css/[name][extname]";
           }
           return "assets/[name]-[hash][extname]";
         },
@@ -118,7 +163,6 @@ export default defineConfig({
     {
       name: "preserve-scripts",
       transformIndexHtml(html) {
-        // Make sure the script tags already have data-vite-ignore
         return html;
       },
     },
