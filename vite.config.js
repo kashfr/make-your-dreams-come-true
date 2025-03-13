@@ -9,11 +9,14 @@ function copyAssets() {
   return {
     name: "copy-assets",
     closeBundle() {
-      // Ensure assets/js directory exists
-      const jsDir = path.resolve(__dirname, "dist/assets/js");
-      if (!fs.existsSync(jsDir)) {
-        fs.mkdirSync(jsDir, { recursive: true });
-      }
+      // Create directory structure
+      const directories = ["dist/assets/js", "dist/assets/css", "dist/images"];
+
+      directories.forEach((dir) => {
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+      });
 
       // Copy JS files
       const jsFiles = [
@@ -34,17 +37,47 @@ function copyAssets() {
           console.warn(`Warning: ${file} not found in assets/js/`);
         }
       });
+
+      // Copy CSS files directly to maintain original structure
+      const cssFiles = ["main.css", "noscript.css", "fontawesome-all.min.css"];
+
+      cssFiles.forEach((file) => {
+        const src = path.resolve(__dirname, `assets/css/${file}`);
+        const dest = path.resolve(__dirname, `dist/assets/css/${file}`);
+        if (fs.existsSync(src)) {
+          fs.copyFileSync(src, dest);
+          console.log(`Copied ${file} to dist/assets/css/`);
+        } else {
+          console.warn(`Warning: ${file} not found in assets/css/`);
+        }
+      });
+
+      // Copy images
+      const imgDir = path.resolve(__dirname, "images");
+      const destImgDir = path.resolve(__dirname, "dist/images");
+
+      if (fs.existsSync(imgDir)) {
+        const imgFiles = fs.readdirSync(imgDir);
+        imgFiles.forEach((file) => {
+          const src = path.resolve(imgDir, file);
+          const dest = path.resolve(destImgDir, file);
+          if (fs.statSync(src).isFile()) {
+            fs.copyFileSync(src, dest);
+            console.log(`Copied ${file} to dist/images/`);
+          }
+        });
+      }
     },
   };
 }
 
 export default defineConfig({
   // Base public path when served in production
-  base: "./",
+  base: "/",
   // Configure the server
   server: {
     port: 3000,
-    open: true, // Automatically open the browser
+    open: true,
     cors: true,
   },
   // Build configuration
@@ -52,20 +85,25 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     sourcemap: true,
-    // Preserve the original file structure
+    // Prevent asset inlining
     assetsInlineLimit: 0,
     rollupOptions: {
+      external: [
+        "/assets/js/jquery.min.js",
+        "/assets/js/browser.min.js",
+        "/assets/js/breakpoints.min.js",
+        "/assets/js/util.js",
+        "/assets/js/main.js",
+      ],
       input: {
         main: resolve(__dirname, "index.html"),
       },
       output: {
-        // Preserve the directory structure
+        // Ensure proper CSS output
         assetFileNames: (assetInfo) => {
-          // Keep original paths for assets in the assets directory
-          if (assetInfo.name && assetInfo.name.includes("assets/")) {
-            return "[name][extname]";
+          if (assetInfo.name && assetInfo.name.endsWith(".css")) {
+            return "assets/[name][extname]";
           }
-          // For other assets, use the default naming
           return "assets/[name]-[hash][extname]";
         },
         entryFileNames: "assets/js/[name]-[hash].js",
@@ -80,11 +118,8 @@ export default defineConfig({
     {
       name: "preserve-scripts",
       transformIndexHtml(html) {
-        // Add data-vite-ignore to script tags to prevent Vite from processing them
-        return html.replace(
-          /<script src="assets\/js\/(jquery\.min|browser\.min|breakpoints\.min|util|main)\.js"><\/script>/g,
-          '<script src="assets/js/$1.js" data-vite-ignore></script>'
-        );
+        // Make sure the script tags already have data-vite-ignore
+        return html;
       },
     },
     copyAssets(),
