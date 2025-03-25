@@ -1419,6 +1419,10 @@ input, select, textarea {
 			opacity: 0;
 		}
 
+		body.is-article-visible #header > *:not(.avatar) {
+			opacity: 0;
+		}
+
 		body.is-preload #header {
 			-moz-filter: blur(0.125rem);
 			-webkit-filter: blur(0.125rem);
@@ -1518,58 +1522,33 @@ input, select, textarea {
 		}
 
 		#header .avatar {
-			position: fixed;
-			top: 2rem;
-			right: 2rem;
-			z-index: 1000;
-			width: 80px;
-			height: 80px;
-			border-radius: 50%;
-			overflow: hidden;
-			box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
-			transition: transform 0.2s ease, box-shadow 0.2s ease;
-			transform-origin: center center;
-			will-change: transform;
+			display: none !important; /* Hide the original avatar, we create a new one in JS */
 		}
 
-		#header .avatar:hover {
-			transform: scale(1.05);
-			box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+		/* Custom fixed avatar styling (backup styles if JS fails) */
+		.avatar-fixed {
+			position: fixed !important;
+			z-index: 10000 !important;
+			border-radius: 50% !important;
+			overflow: hidden !important;
+			box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.5) !important;
+			transition: box-shadow 0.3s ease !important;
 		}
 
-		#header .avatar img {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-			display: block;
+		.avatar-fixed img {
+			width: 100% !important;
+			height: 100% !important;
+			object-fit: cover !important;
+			display: block !important;
 		}
 
-		/* This ensures the avatar doesn't change during modal transitions */
-		body.is-article-visible #header .avatar {
-			transform: none;
-			opacity: 1;
-			-moz-filter: none;
-			-webkit-filter: none;
-			-ms-filter: none;
-			filter: none;
+		.avatar-fixed:hover {
+			box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.8) !important;
+			cursor: pointer !important;
 		}
 
-		@media screen and (max-width: 736px) {
-			#header .avatar {
-				width: 60px;
-				height: 60px;
-				top: 1.5rem;
-				right: 1.5rem;
-			}
-		}
-
-		@media screen and (max-width: 480px) {
-			#header .avatar {
-				width: 50px;
-				height: 50px;
-				top: 1rem;
-				right: 1rem;
-			}
+		.avatar-tooltip {
+			white-space: nowrap !important;
 		}
 
 /* Main */
