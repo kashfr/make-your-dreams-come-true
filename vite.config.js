@@ -10,7 +10,12 @@ function copyAssets() {
     name: "copy-assets",
     closeBundle() {
       // Create directory structure
-      const directories = ["dist/assets/js", "dist/assets/css", "dist/images"];
+      const directories = [
+        "dist/assets/js",
+        "dist/assets/css",
+        "dist/assets/webfonts",
+        "dist/images",
+      ];
 
       directories.forEach((dir) => {
         if (!fs.existsSync(dir)) {
@@ -75,6 +80,9 @@ function copyAssets() {
       const destImgDir = path.resolve(__dirname, "dist/images");
 
       if (fs.existsSync(imgDir)) {
+        if (!fs.existsSync(destImgDir)) {
+          fs.mkdirSync(destImgDir, { recursive: true });
+        }
         const imgFiles = fs.readdirSync(imgDir);
         imgFiles.forEach((file) => {
           const src = path.resolve(imgDir, file);
@@ -99,10 +107,10 @@ function copyAssets() {
           .replace(/src="images\//g, 'src="/images/')
           .replace(/href="images\//g, 'href="/images/');
 
-        // Add the compiled script
+        // Remove any references to hashed main.js file
         originalHtml = originalHtml.replace(
-          "</head>",
-          '  <script type="module" crossorigin src="/assets/js/main-CZSNINCa.js"></script>\n</head>'
+          /<script type="module" crossorigin src="\/assets\/js\/main-[A-Za-z0-9]+\.js"><\/script>/g,
+          ""
         );
 
         fs.writeFileSync(htmlPath, originalHtml);
@@ -128,28 +136,31 @@ export default defineConfig({
     // Prevent asset inlining
     assetsInlineLimit: 0,
     rollupOptions: {
-      external: [
-        "/assets/js/jquery.min.js",
-        "/assets/js/browser.min.js",
-        "/assets/js/breakpoints.min.js",
-        "/assets/js/util.js",
-        "/assets/js/main.js",
-        "/assets/js/contact.js",
-      ],
       input: {
         main: resolve(__dirname, "index.html"),
       },
       output: {
         // Ensure proper CSS output
         assetFileNames: (assetInfo) => {
-          // Don't hash CSS files
-          if (assetInfo.name && assetInfo.name.endsWith(".css")) {
-            return "assets/css/[name][extname]";
+          const info = assetInfo.name.split(".");
+          let extType = info[info.length - 1];
+
+          if (/\.(woff|woff2|eot|ttf|otf)$/i.test(assetInfo.name)) {
+            return `assets/webfonts/[name][extname]`;
           }
-          return "assets/[name]-[hash][extname]";
+
+          if (/\.(css)$/i.test(assetInfo.name)) {
+            return `assets/css/[name][extname]`;
+          }
+
+          if (/\.(png|jpe?g|gif|svg|webp|ico)$/i.test(assetInfo.name)) {
+            return `images/[name][extname]`;
+          }
+
+          return `assets/[name][extname]`;
         },
-        entryFileNames: "assets/js/[name]-[hash].js",
-        chunkFileNames: "assets/js/[name]-[hash].js",
+        entryFileNames: "assets/js/[name].js",
+        chunkFileNames: "assets/js/[name].js",
       },
     },
     // Ensure IMask is properly processed
