@@ -155,6 +155,11 @@ export default defineConfig({
         chunkFileNames: "assets/js/[name]-[hash].js",
       },
     },
+    // Ensure IMask is properly processed
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
   },
   // Environment variables
   envPrefix: "VITE_",

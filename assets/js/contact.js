@@ -1,6 +1,7 @@
 // Import EmailJS
 import emailjs from "@emailjs/browser";
-import IMask from "imask";
+// Instead of importing imask from npm, use it from CDN
+// import IMask from "imask";
 
 // Initialize EmailJS
 try {
@@ -9,26 +10,44 @@ try {
   console.error("EmailJS initialization failed:", error);
 }
 
+// Dynamically load IMask from CDN
+function loadIMaskFromCDN() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://unpkg.com/imask@7.6.1/dist/imask.min.js";
+    script.onload = () => resolve(window.IMask);
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
 /**
  * Initialize phone input masking
  */
-function initPhoneInput() {
+async function initPhoneInput() {
   const phoneInput = document.getElementById("phone");
   if (!phoneInput) {
     console.error("Phone input element not found");
-    // Try again later - sometimes elements aren't immediately available in SPAs
+    // Try again later
     setTimeout(initPhoneInput, 300);
     return;
   }
 
-  // Create mask instance for US phone format
-  const phoneMask = IMask(phoneInput, {
-    mask: "(000) 000-0000",
-    lazy: false, // make placeholder always visible
-    placeholderChar: "_",
-  });
+  try {
+    // Load IMask from CDN
+    const IMask = await loadIMaskFromCDN();
 
-  console.log("Phone mask initialized successfully");
+    // Create mask instance for US phone format
+    const phoneMask = IMask(phoneInput, {
+      mask: "(000) 000-0000",
+      lazy: false, // make placeholder always visible
+      placeholderChar: "_",
+    });
+
+    console.log("Phone mask initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize phone mask:", error);
+  }
 }
 
 /**
