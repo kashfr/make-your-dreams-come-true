@@ -8,6 +8,55 @@ try {
   console.error("EmailJS initialization failed:", error);
 }
 
+// Phone number formatting
+const phoneInput = document.getElementById("phone");
+if (phoneInput) {
+  phoneInput.addEventListener("input", function (e) {
+    // Remove all non-digit characters
+    let value = this.value.replace(/\D/g, "");
+
+    // Format phone number with parentheses
+    if (value.length > 0) {
+      if (value.length <= 3) {
+        // Format: (123
+        this.value = "(" + value;
+      } else if (value.length <= 6) {
+        // Format: (123) 456
+        this.value = "(" + value.substring(0, 3) + ") " + value.substring(3);
+      } else {
+        // Format: (123) 456-7890
+        this.value =
+          "(" +
+          value.substring(0, 3) +
+          ") " +
+          value.substring(3, 6) +
+          "-" +
+          value.substring(6, 10);
+      }
+    }
+
+    // Limit to 10 digits (plus formatting)
+    if (value.length > 10) {
+      value = value.substring(0, 10);
+      this.value =
+        "(" +
+        value.substring(0, 3) +
+        ") " +
+        value.substring(3, 6) +
+        "-" +
+        value.substring(6);
+    }
+  });
+
+  // Prevent non-numeric input
+  phoneInput.addEventListener("keypress", function (e) {
+    // Allow only digits (0-9)
+    if (!/\d/.test(e.key)) {
+      e.preventDefault();
+    }
+  });
+}
+
 // Handle form submission
 document
   .getElementById("contact-form")
@@ -32,6 +81,7 @@ document
     const formData = {
       name: document.getElementById("name").value.trim(),
       email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
       message: document.getElementById("message").value.trim(),
       time: new Date().toLocaleString(), // Add timestamp to the email
     };
