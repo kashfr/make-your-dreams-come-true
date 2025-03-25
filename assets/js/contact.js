@@ -10,44 +10,97 @@ try {
   console.error("EmailJS initialization failed:", error);
 }
 
-// Dynamically load IMask from CDN
-function loadIMaskFromCDN() {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "https://unpkg.com/imask@7.6.1/dist/imask.min.js";
-    script.onload = () => resolve(window.IMask);
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-}
-
 /**
- * Initialize phone input masking
+ * Initialize phone input formatting
  */
-async function initPhoneInput() {
+function initPhoneInput() {
   const phoneInput = document.getElementById("phone");
   if (!phoneInput) {
     console.error("Phone input element not found");
-    // Try again later
+    // Try again after a short delay
     setTimeout(initPhoneInput, 300);
     return;
   }
 
-  try {
-    // Load IMask from CDN
-    const IMask = await loadIMaskFromCDN();
+  console.log("Phone input element found, attaching handlers");
 
-    // Create mask instance for US phone format
-    const phoneMask = IMask(phoneInput, {
-      mask: "(000) 000-0000",
-      lazy: false, // make placeholder always visible
-      placeholderChar: "_",
-    });
+  // Format function
+  function formatPhoneNumber(input) {
+    // Strip all non-numeric characters
+    const numbers = input.replace(/\D/g, "");
 
-    console.log("Phone mask initialized successfully");
-  } catch (error) {
-    console.error("Failed to initialize phone mask:", error);
+    // Format based on length
+    if (numbers.length <= 3) {
+      return numbers.length ? `(${numbers}` : "";
+    } else if (numbers.length <= 6) {
+      return `(${numbers.substring(0, 3)}) ${numbers.substring(3)}`;
+    } else {
+      return `(${numbers.substring(0, 3)}) ${numbers.substring(
+        3,
+        6
+      )}-${numbers.substring(6, 10)}`;
+    }
   }
+
+  // Input event handler
+  phoneInput.addEventListener("input", function (e) {
+    // Store cursor position
+    const cursorPos = this.selectionStart;
+    const oldValue = this.value;
+    const oldLength = oldValue.length;
+
+    // Format the value
+    const cleaned = this.value.replace(/\D/g, "").substring(0, 10);
+    this.value = formatPhoneNumber(cleaned);
+
+    // Adjust cursor position if needed
+    if (cursorPos === oldLength) {
+      // If cursor was at the end, keep it at the end
+      this.setSelectionRange(this.value.length, this.value.length);
+    } else if (this.value.length > 0) {
+      // Try to maintain cursor position
+      this.setSelectionRange(cursorPos, cursorPos);
+    }
+  });
+
+  // Block non-numeric keys directly in keydown event
+  phoneInput.addEventListener("keydown", function (e) {
+    // Always allow: navigation keys, tab, backspace, delete
+    const allowedKeys = [
+      "Backspace",
+      "Delete",
+      "Tab",
+      "Escape",
+      "Enter",
+      "Home",
+      "End",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
+    ];
+
+    // Allow control/cmd key combinations (copy, paste, etc)
+    if (e.ctrlKey || e.metaKey) return;
+
+    // Allow navigation keys
+    if (allowedKeys.includes(e.key)) return;
+
+    // Block any non-numeric keys
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+      console.log("Prevented non-numeric input:", e.key);
+    }
+  });
+
+  // Ensure proper format on blur
+  phoneInput.addEventListener("blur", function () {
+    if (this.value.length > 0 && this.value.replace(/\D/g, "").length < 10) {
+      console.log("Phone number incomplete on blur");
+    }
+  });
+
+  console.log("Phone input handlers attached successfully");
 }
 
 /**
