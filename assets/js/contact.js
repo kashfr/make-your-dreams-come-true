@@ -25,13 +25,9 @@ const EMAILJS_TEMPLATE_ID = "template_vt0s1t6";
 function initPhoneInput() {
   const phoneInput = document.getElementById("phone");
   if (!phoneInput) {
-    console.error("Phone input element not found");
-    // Try again after a short delay
     setTimeout(initPhoneInput, 300);
     return;
   }
-
-  console.log("Phone input element found, attaching handlers");
 
   // Format function
   function formatPhoneNumber(input) {
@@ -98,18 +94,8 @@ function initPhoneInput() {
     // Block any non-numeric keys
     if (!/^[0-9]$/.test(e.key)) {
       e.preventDefault();
-      console.log("Prevented non-numeric input:", e.key);
     }
   });
-
-  // Ensure proper format on blur
-  phoneInput.addEventListener("blur", function () {
-    if (this.value.length > 0 && this.value.replace(/\D/g, "").length < 10) {
-      console.log("Phone number incomplete on blur");
-    }
-  });
-
-  console.log("Phone input handlers attached successfully");
 }
 
 /**
@@ -118,8 +104,6 @@ function initPhoneInput() {
 function initContactForm() {
   const contactForm = document.getElementById("contact-form");
   if (!contactForm) {
-    console.error("Contact form element not found");
-    // Try again later
     setTimeout(initContactForm, 300);
     return;
   }
@@ -190,7 +174,6 @@ function initContactForm() {
         }, 5000);
       }, 2000);
     } catch (error) {
-      console.error("EmailJS error:", error);
       // Show error message
       errorMessage.textContent = "Failed to send message. Please try again.";
       errorMessage.style.display = "inline";
@@ -211,10 +194,8 @@ function initContactForm() {
  */
 document.addEventListener("DOMContentLoaded", function () {
   try {
-    console.log("Contact form initialization starting");
     initPhoneInput();
     initContactForm();
-    console.log("Contact form initialization complete");
   } catch (error) {
     console.error("Error during contact form initialization:", error);
   }

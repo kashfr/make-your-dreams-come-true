@@ -33,7 +33,6 @@ function copyAssets() {
         const dest = path.resolve(__dirname, `dist/assets/js/${file}`);
         if (fs.existsSync(src)) {
           fs.copyFileSync(src, dest);
-          console.log(`Copied ${file} to dist/assets/js/`);
         } else {
           console.warn(`Warning: ${file} not found in assets/js/`);
         }
@@ -47,7 +46,6 @@ function copyAssets() {
         const dest = path.resolve(__dirname, `dist/assets/css/${file}`);
         if (fs.existsSync(src)) {
           fs.copyFileSync(src, dest);
-          console.log(`Copied ${file} to dist/assets/css/`);
         } else {
           console.warn(`Warning: ${file} not found in assets/css/`);
         }
@@ -68,7 +66,6 @@ function copyAssets() {
           const dest = path.resolve(destWebfontsDir, file);
           if (fs.statSync(src).isFile()) {
             fs.copyFileSync(src, dest);
-            console.log(`Copied ${file} to dist/assets/webfonts/`);
           }
         });
       }
@@ -84,7 +81,6 @@ function copyAssets() {
           const dest = path.resolve(destImgDir, file);
           if (fs.statSync(src).isFile()) {
             fs.copyFileSync(src, dest);
-            console.log(`Copied ${file} to dist/images/`);
           }
         });
       }
@@ -110,7 +106,6 @@ function copyAssets() {
         );
 
         fs.writeFileSync(htmlPath, originalHtml);
-        console.log("Completely rewrote HTML file with proper paths");
       }
     },
   };
