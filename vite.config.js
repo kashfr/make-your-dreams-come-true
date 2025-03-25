@@ -25,6 +25,7 @@ function copyAssets() {
         "breakpoints.min.js",
         "util.js",
         "main.js",
+        "contact.js",
       ];
 
       jsFiles.forEach((file) => {
@@ -138,6 +139,7 @@ export default defineConfig({
         "/assets/js/breakpoints.min.js",
         "/assets/js/util.js",
         "/assets/js/main.js",
+        "/assets/js/contact.js",
       ],
       input: {
         main: resolve(__dirname, "index.html"),

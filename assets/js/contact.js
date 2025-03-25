@@ -1,14 +1,23 @@
-// Import EmailJS
-import emailjs from "@emailjs/browser";
-// Instead of importing imask from npm, use it from CDN
-// import IMask from "imask";
+/**
+ * Contact form handling with EmailJS
+ *
+ * This script handles phone number validation and formatting
+ * and submits the form using EmailJS.
+ */
 
-// Initialize EmailJS
-try {
-  emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
-} catch (error) {
-  console.error("EmailJS initialization failed:", error);
-}
+// EmailJS configuration
+const EMAILJS_PUBLIC_KEY = "9YiWD6lOZXmFmrbYA";
+const EMAILJS_SERVICE_ID = "service_bx73ty1";
+const EMAILJS_TEMPLATE_ID = "template_vt0s1t6";
+
+// Initialize EmailJS when the script loads
+(function () {
+  if (typeof emailjs !== "undefined") {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+  } else {
+    console.error("EmailJS not loaded");
+  }
+})();
 
 /**
  * Initialize phone input formatting
@@ -150,13 +159,19 @@ function initContactForm() {
       return;
     }
 
+    // Check if EmailJS is loaded
+    if (typeof emailjs === "undefined") {
+      errorMessage.textContent =
+        "Email service not available. Please try again later.";
+      errorMessage.style.display = "inline";
+      submitButton.value = originalValue;
+      submitButton.disabled = false;
+      return;
+    }
+
     try {
       // Send the email using EmailJS
-      await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        formData
-      );
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, formData);
 
       // Show success message
       successMessage.style.display = "inline";
@@ -192,23 +207,15 @@ function initContactForm() {
 }
 
 /**
- * Initialize everything as soon as possible in multiple ways
- * to maximize compatibility across different environments
+ * Initialize everything when the page loads
  */
-function initAll() {
+document.addEventListener("DOMContentLoaded", function () {
   try {
+    console.log("Contact form initialization starting");
     initPhoneInput();
     initContactForm();
-    console.log("Form initialization complete");
+    console.log("Contact form initialization complete");
   } catch (error) {
-    console.error("Error during initialization:", error);
+    console.error("Error during contact form initialization:", error);
   }
-}
-
-// Initialize when DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initAll);
-} else {
-  // DOM already loaded, initialize now
-  initAll();
-}
+});
