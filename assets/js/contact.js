@@ -1,5 +1,6 @@
 // Import EmailJS
 import emailjs from "@emailjs/browser";
+import IMask from "imask";
 
 // Initialize EmailJS
 try {
@@ -8,125 +9,37 @@ try {
   console.error("EmailJS initialization failed:", error);
 }
 
-// Function to format phone numbers
-function formatPhoneNumber(value) {
-  // Remove all non-digit characters
-  const digits = value.replace(/\D/g, "");
-
-  // Format based on length
-  if (digits.length <= 3) {
-    return digits.length ? `(${digits}` : "";
-  } else if (digits.length <= 6) {
-    return `(${digits.substring(0, 3)}) ${digits.substring(3)}`;
-  } else {
-    return `(${digits.substring(0, 3)}) ${digits.substring(
-      3,
-      6
-    )}-${digits.substring(6, 10)}`;
-  }
-}
-
-// Initialize phone input formatting
-function initPhoneFormatting() {
+/**
+ * Initialize phone input masking
+ */
+function initPhoneInput() {
   const phoneInput = document.getElementById("phone");
-
   if (!phoneInput) {
     console.error("Phone input element not found");
-    // Try again in 500ms - sometimes elements aren't immediately available
-    setTimeout(initPhoneFormatting, 500);
+    // Try again later - sometimes elements aren't immediately available in SPAs
+    setTimeout(initPhoneInput, 300);
     return;
   }
 
-  console.log("Phone input element found, attaching handlers");
-
-  // Store the cursor position for better UX when typing
-  let cursorPosition = 0;
-
-  // Handle input event
-  phoneInput.addEventListener("input", function (e) {
-    // Save cursor position
-    cursorPosition = this.selectionStart;
-
-    // Get input value and remove non-digits
-    const value = this.value;
-    const digits = value.replace(/\D/g, "").substring(0, 10);
-
-    // Format and set the value
-    const formattedValue = formatPhoneNumber(digits);
-
-    // Only update if value changed to prevent cursor jumping
-    if (this.value !== formattedValue) {
-      this.value = formattedValue;
-
-      // Adjust cursor position based on formatting changes
-      if (cursorPosition === value.length) {
-        // If cursor was at the end, keep it at the end
-        this.setSelectionRange(formattedValue.length, formattedValue.length);
-      } else {
-        // Try to maintain cursor position relative to digits
-        this.setSelectionRange(cursorPosition, cursorPosition);
-      }
-    }
+  // Create mask instance for US phone format
+  const phoneMask = IMask(phoneInput, {
+    mask: "(000) 000-0000",
+    lazy: false, // make placeholder always visible
+    placeholderChar: "_",
   });
 
-  // Use keydown to handle special keys and prevent non-numeric input
-  phoneInput.addEventListener("keydown", function (e) {
-    // Don't block control keys or navigation
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-
-    // Allow: backspace, delete, tab, escape, arrow keys, home, end
-    if ([8, 9, 27, 46, 37, 38, 39, 40, 35, 36].indexOf(e.keyCode) !== -1)
-      return;
-
-    // Block non-numeric keys except function keys F1-F12
-    if (
-      (e.keyCode < 48 || e.keyCode > 57) &&
-      (e.keyCode < 96 || e.keyCode > 105) &&
-      (e.keyCode < 112 || e.keyCode > 123)
-    ) {
-      e.preventDefault();
-      console.log("Prevented non-numeric input: ", e.key);
-    }
-  });
-
-  // Ensure proper formatting on blur
-  phoneInput.addEventListener("blur", function () {
-    const digits = this.value.replace(/\D/g, "");
-    if (digits.length > 0 && digits.length < 10) {
-      // If incomplete number, normalize format
-      this.value = formatPhoneNumber(digits);
-    }
-  });
+  console.log("Phone mask initialized successfully");
 }
 
-// Try both approaches for maximum compatibility
-// 1. Wait for DOM to be fully loaded
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("DOMContentLoaded fired");
-  initPhoneFormatting();
-  initContactForm();
-});
-
-// 2. Also try immediate initialization if the document is already loaded
-if (
-  document.readyState === "complete" ||
-  document.readyState === "interactive"
-) {
-  console.log("Document already loaded, initializing immediately");
-  setTimeout(function () {
-    initPhoneFormatting();
-    initContactForm();
-  }, 1);
-}
-
-// Handle form submission
+/**
+ * Initialize contact form submission
+ */
 function initContactForm() {
   const contactForm = document.getElementById("contact-form");
-
   if (!contactForm) {
     console.error("Contact form element not found");
-    // Try again in 500ms - sometimes elements aren't immediately available
-    setTimeout(initContactForm, 500);
+    // Try again later
+    setTimeout(initContactForm, 300);
     return;
   }
 
@@ -204,4 +117,26 @@ function initContactForm() {
       }, 2000);
     }
   });
+}
+
+/**
+ * Initialize everything as soon as possible in multiple ways
+ * to maximize compatibility across different environments
+ */
+function initAll() {
+  try {
+    initPhoneInput();
+    initContactForm();
+    console.log("Form initialization complete");
+  } catch (error) {
+    console.error("Error during initialization:", error);
+  }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initAll);
+} else {
+  // DOM already loaded, initialize now
+  initAll();
 }
