@@ -179,6 +179,16 @@ export default defineConfig({
         return html;
       },
     },
+    {
+      name: "disable-preload-fonts",
+      transformIndexHtml(html) {
+        // Remove any preload links for font files that Vite might add
+        return html.replace(
+          /<link rel="preload".*?(woff2|woff|ttf|eot|otf).*?>/g,
+          ""
+        );
+      },
+    },
     copyAssets(),
   ],
 });
